@@ -1,0 +1,20 @@
+0 - пустая клетка empty cell
+
+    белая white     чёрная black
+1 - пешка PAWN  	p
+2 - тура ROOK  		r
+3 - конь KNIGHT		n
+4 - слон BISHOP		b
+5 - король KING		k
+6 - королева QUEEN	q
+
+7 - ход белых turn of white team
+8 - ход чёрных turn of black team
+
+последняя цифра сида - чей ход
+last number of seed - whose turn
+
+сид считывается на доску по горизонтали "построчно", то есть сначала первая "строка" доски, затем следующая
+the seed is read onto the board horizontally "line by line", first the first "line" of the board, then the next
+
+rnbqkbnrpppppppp0000000000000000000000000000000011111111234654327 - начало игры beginning of the game
