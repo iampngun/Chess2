@@ -14,6 +14,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import sample.Main;
 import sample.filework.FileReaderWriter;
+import sample.gameLogic.PlayerLogic;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class GameController implements Initializable {
     public static String save;
     public static String opponent;
 
-    public static boolean whiteTeamsTurn;
+    private final PlayerLogic playerLogic = new PlayerLogic();
 
     List<ImageView> figures = new ArrayList<>();
 
@@ -74,41 +75,49 @@ public class GameController implements Initializable {
     }
 
     private void figureClicked(AnchorPane anchorPane) {
+        if(playerLogic.getAnchorPane() != null) {
+            playerLogic.setOldAnchorPane(playerLogic.getAnchorPane());
+        } else {
+            playerLogic.setOldAnchorPane(anchorPane);
+        }
+        playerLogic.setAnchorPane(anchorPane);
 
+        if(playerLogic.getOldAnchorPane() != playerLogic.getAnchorPane()) {
+            setCords();
+            playerLogic.checkTeams();
+        }
+    }
+
+    private void setCords() {
+        if(GridPane.getRowIndex(playerLogic.getOldAnchorPane()) == null) playerLogic.setX1(0);
+        else playerLogic.setX1(GridPane.getRowIndex(playerLogic.getOldAnchorPane()));
+
+        if(GridPane.getColumnIndex(playerLogic.getOldAnchorPane()) == null) playerLogic.setY1(0);
+        else playerLogic.setY1(GridPane.getColumnIndex(playerLogic.getOldAnchorPane()));
+
+        if(GridPane.getRowIndex(playerLogic.getAnchorPane()) == null) playerLogic.setX2(0);
+        else playerLogic.setX2(GridPane.getRowIndex(playerLogic.getAnchorPane()));
+
+        if(GridPane.getColumnIndex(playerLogic.getAnchorPane()) == null) playerLogic.setY2(0);
+        else playerLogic.setY2(GridPane.getColumnIndex(playerLogic.getAnchorPane()));
     }
 
     private void placeFigures() {
         int figureNumber = 0;
         for(int i = 0; i < save.length(); i++) {
+            AnchorPane anchorPane = createCell(i);
             switch(save.charAt(i)) {
                 case '0':
                     break;
                 case '7':
-                    whiteTeamsTurn = true;
+                    PlayerLogic.whiteTeamsTurn = true;
                     break;
                 case '8':
-                    whiteTeamsTurn = false;
+                    PlayerLogic.whiteTeamsTurn = false;
                     break;
                 default:
                     try {
-                        figures.add(new ImageView(new Image("sample/images/" + save.charAt(i) + ".png")));
-                        figures.get(figureNumber).fitHeightProperty().bind(MainMenuController.stage.heightProperty().divide(10));
-                        figures.get(figureNumber).fitWidthProperty().bind(MainMenuController.stage.widthProperty().divide(10));
-                        // row(строка) = i div 8, column(столбец) = i - 8 * (i div 8)
-                        final AnchorPane anchorPane = (AnchorPane) desc_gridPane.getChildren().get((i / 8) * 8 + (i - 8 * (i / 8)));
-                        anchorPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                            @Override
-                            public void handle(MouseEvent mouseEvent) {
-                                figureClicked(anchorPane);
-                            }
-                        });
-                        StackPane stackPane = new StackPane();
-                        anchorPane.getChildren().add(stackPane);
-                        AnchorPane.setTopAnchor(stackPane, 0.0);
-                        AnchorPane.setBottomAnchor(stackPane, 0.0);
-                        AnchorPane.setRightAnchor(stackPane, 0.0);
-                        AnchorPane.setLeftAnchor(stackPane, 0.0);
-                        stackPane.getChildren().add(figures.get(figureNumber));
+                        addFigureOnGrid(i, figureNumber, anchorPane);
                         figureNumber++;
                     } catch(Exception e){
                         e.printStackTrace();
@@ -116,6 +125,38 @@ public class GameController implements Initializable {
                     break;
             }
         }
+    }
+
+    private AnchorPane createCell(int i) {
+        AnchorPane anchorPane;
+        try {
+            anchorPane = (AnchorPane) desc_gridPane.getChildren().get((i / 8) * 8 + (i - 8 * (i / 8)));
+        } catch(IndexOutOfBoundsException e) {
+            anchorPane = (AnchorPane) desc_gridPane.getChildren().get(63);
+        }
+        final AnchorPane finalAnchorPane = anchorPane;
+        anchorPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                figureClicked(finalAnchorPane);
+            }
+        });
+
+        return anchorPane;
+    }
+
+    private void addFigureOnGrid(int i, int figureNumber, AnchorPane anchorPane) {
+        figures.add(new ImageView(new Image("sample/images/" + save.charAt(i) + ".png")));
+        figures.get(figureNumber).fitHeightProperty().bind(MainMenuController.stage.heightProperty().divide(10));
+        figures.get(figureNumber).fitWidthProperty().bind(MainMenuController.stage.widthProperty().divide(10));
+        // row(строка) = i div 8, column(столбец) = i - 8 * (i div 8)
+        StackPane stackPane = new StackPane();
+        anchorPane.getChildren().add(stackPane);
+        AnchorPane.setTopAnchor(stackPane, 0.0);
+        AnchorPane.setBottomAnchor(stackPane, 0.0);
+        AnchorPane.setRightAnchor(stackPane, 0.0);
+        AnchorPane.setLeftAnchor(stackPane, 0.0);
+        stackPane.getChildren().add(figures.get(figureNumber));
     }
         /*
         StackPane stackPane1 = (StackPane) anchorPane.getChildren().get(0);
