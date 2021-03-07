@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="chessFX:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/chessFX_jar</output-path>
+    <root id="archive" name="chessFX.jar">
+      <element id="module-output" name="chessFX" />
+      <element id="extracted-dir" path="C:/Program Files (x86)/Oracle/JavaFX 2.2 SDK/lib/javafx-mx.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/Program Files (x86)/Oracle/JavaFX 2.2 SDK/lib/ant-javafx.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/Program Files (x86)/Oracle/JavaFX 2.2 SDK/lib/javafx-doclet.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/Program Files (x86)/Oracle/JavaFX 2.2 Runtime/lib/jfxrt.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/Program Files (x86)/Oracle/JavaFX 2.2 Runtime/lib/deploy.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/Program Files (x86)/Oracle/JavaFX 2.2 Runtime/lib/javaws.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="C:/Program Files (x86)/Oracle/JavaFX 2.2 Runtime/lib/plugin.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
