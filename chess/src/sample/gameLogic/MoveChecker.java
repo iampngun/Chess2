@@ -121,6 +121,11 @@ public class MoveChecker { //Добавить превращение пешки
         System.out.println("Checking, first cell is " + x1 + "," + y1 + "; second is " + x2 + "," + y2);
         boolean canMove = false;
 
+        final boolean straightMove = (x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2);
+        final boolean knightMove = (Math.abs(x1 - x2) == 2 && Math.abs(y1 - y2) == 1) || (Math.abs(x1 - x2) == 1 && Math.abs(y1 - y2) == 2);
+        final boolean diagonalMove = Math.abs(x1 - x2) == Math.abs(y1 - y2);
+        final boolean oneCellMove = Math.abs(x1 - x2) <= 1 && Math.abs(y1 - y2) <= 1;
+
         switch(figureName) {
             case '1': //белая пешка
                 if(x1 == x2 && y1 - y2 == 1) {
@@ -146,7 +151,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case '2': //белая тура
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -158,7 +163,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case '3': //белый конь
-                if((Math.abs(x1 - x2) == 2 && Math.abs(y1 - y2) == 1) || (Math.abs(x1 - x2) == 1 && Math.abs(y1 - y2) == 2)) {
+                if(knightMove) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -170,7 +175,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case '4': //белый слон
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -182,7 +187,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case '5': //белый король
-                if(Math.abs(x1 - x2) <= 1 && Math.abs(y1 - y2) <= 1) {
+                if(oneCellMove) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -196,7 +201,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case '6': //белый ферзь
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -206,7 +211,7 @@ public class MoveChecker { //Добавить превращение пешки
                         canMove = true;
                     }
                 }
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -241,7 +246,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case 'r': //чёрная тура
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -253,7 +258,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case 'n': //чёрный конь
-                if((Math.abs(x1 - x2) == 2 && Math.abs(y1 - y2) == 1) || (Math.abs(x1 - x2) == 1 && Math.abs(y1 - y2) == 2)) {
+                if(knightMove) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -265,7 +270,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case 'b': //чёрный слон
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -277,7 +282,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case 'k': //чёрный король
-                if(Math.abs(x1 - x2) <= 1 && Math.abs(y1 - y2) <= 1) {
+                if(oneCellMove) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -291,7 +296,7 @@ public class MoveChecker { //Добавить превращение пешки
                 }
                 break;
             case 'q': //чёрный ферзь
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -301,7 +306,7 @@ public class MoveChecker { //Добавить превращение пешки
                         canMove = true;
                     }
                 }
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
+                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {

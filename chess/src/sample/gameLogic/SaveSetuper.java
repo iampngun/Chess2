@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SaveSetuper {
-    private StringBuilder save = new StringBuilder("");
+    private StringBuilder save = new StringBuilder();
     private String opponent;
     private List<ImageView> figures = new ArrayList<>();
 

@@ -1,7 +1,6 @@
 package sample.gameLogic;
 
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import sample.controllers.GameController;
 
@@ -15,7 +14,7 @@ public class PlayerLogic {
         return !stackPane.getChildren().isEmpty();
     }
 
-    public static char getFigureNameFromStackPane(StackPane stackPane) { //переименовать
+    public static char getFigureNameFromStackPane(StackPane stackPane) { 
         String imageUrl = "{.";
         if(stackPane != null) {
             if (!stackPane.getChildren().isEmpty()) {

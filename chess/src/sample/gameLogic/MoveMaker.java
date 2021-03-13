@@ -1,7 +1,6 @@
 package sample.gameLogic;
 
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import sample.controllers.GameController;
 import sample.filework.FileReaderWriter;
