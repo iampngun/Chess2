@@ -30,6 +30,7 @@ public class GameController implements Initializable {
     public static boolean whiteTeamsTurn;
     public static int castlingType = 0; //0 - не рокировка, 1 - рокировка влево, 2 - рокировка вправо
     public static char figureName = '_';
+    public static StackPane pawnStackPane;
     public static StackPane stackPane;
     public static StackPane oldStackPane;
     public static StackPane markedStackPane;

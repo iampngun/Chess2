@@ -3,14 +3,15 @@ package sample.gameLogic;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import sample.controllers.GameController;
+import sample.filework.FileReaderWriter;
 
-public class MoveChecker { //Добавить рокировку, взятие на проходе, превращение пешки
+public class MoveChecker { //Добавить превращение пешки
 
     public MoveChecker() {
 
     }
 
-    public boolean wayIsFree(GridPane gridPane, StackPane stackPane, StackPane oldStackPane, int x1, int x2, int y1, int y2) {
+    public boolean wayIsFree(GridPane gridPane, int x1, int x2, int y1, int y2) {
         boolean isFree = true;
         int maxI;
 
@@ -51,8 +52,37 @@ public class MoveChecker { //Добавить рокировку, взятие �
 
         return isFree;
     }
-//рокировка не готова
-    public boolean isCastling(GridPane gridPane, StackPane stackPane, StackPane markedStackPane, char figureName, int x1, int x2, int y1, int y2) {
+
+    public boolean isEnPassant(GridPane gridPane, char figureName, int x1, int x2, int y1) {
+        boolean isEnPassant = false;
+
+        int x = 1;
+        if(x1 > x2) x = -1;
+
+        StackPane checkingStackPane = (StackPane) gridPane.getChildren().get(y1 * 8 + (x1 + x));
+
+        char enemyFigureName;
+        int y;
+        if(figureName == '1') { enemyFigureName = 'p'; y = -2; } else { enemyFigureName = '1'; y = +2; }
+
+        if(!checkingStackPane.getChildren().isEmpty()) {
+            if(PlayerLogic.getFigureNameFromStackPane(checkingStackPane) == enemyFigureName) {
+                StringBuilder save = new StringBuilder();
+                save.append(FileReaderWriter.readFile("src/saves/" + GameController.saveSetuper.getOpponent() + "History.txt"));
+                save.delete(save.length() - 130, save.length());
+                save.delete(0, save.length() - 130);
+                if(save.charAt(((y1 + y) * 8 + (x1 + x)) + 1) == enemyFigureName) {
+                    System.out.println("its enPassant");
+                    isEnPassant = true;
+                    GameController.pawnStackPane = checkingStackPane;
+                }
+            }
+        }
+
+        return isEnPassant;
+    }
+
+    public boolean isCastling(GridPane gridPane, char figureName, int x1, int x2, int y1, int y2) {
         boolean isCastling = false;
         System.out.println("maybe its a castling");
 
@@ -76,7 +106,7 @@ public class MoveChecker { //Добавить рокировку, взятие �
                     && (PlayerLogic.getFigureNameFromStackPane(checkingStackPane) == '2' || PlayerLogic.getFigureNameFromStackPane(checkingStackPane) == 'r')
                     && checkingStackPane.getChildren().get(0).getId().equals("@")) { //если на крайней клетке дружественная тура, которая не ходила
                 System.out.println("на крайней клетке дружественная тура, которая не ходила");
-                if(wayIsFree(gridPane, stackPane, markedStackPane, x1, x, y1, y2)) {
+                if(wayIsFree(gridPane, x1, x, y1, y2)) {
                     isCastling = true;
                     GameController.castlingType = castlingType;
                 }
@@ -99,7 +129,7 @@ public class MoveChecker { //Добавить рокировку, взятие �
                     }
                 }
                 if(x1 == x2 && y1 - y2 == 2 && markedStackPane.getChildren().get(0).getId().equals("@")) {
-                    if(stackPane.getChildren().isEmpty() && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                    if(stackPane.getChildren().isEmpty() && wayIsFree(gridPane, x1, x2, y1, y2)) {
                         canMove = true;
                     }
                 }
@@ -110,12 +140,13 @@ public class MoveChecker { //Добавить рокировку, взятие �
                             canMove = true;
                         }
                     } else {
-
+                        System.out.println("maybe its enPassant");
+                        canMove = isEnPassant(gridPane, figureName, x1, x2, y1);
                     }
                 }
                 break;
             case '2': //белая тура
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -139,7 +170,7 @@ public class MoveChecker { //Добавить рокировку, взятие �
                 }
                 break;
             case '4': //белый слон
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -161,11 +192,11 @@ public class MoveChecker { //Добавить рокировку, взятие �
                         canMove = true;
                     }
                 } else if(markedStackPane.getChildren().get(0).getId().equals("@")) {
-                        canMove = isCastling(gridPane, stackPane, markedStackPane, figureName, x1, x2, y1, y2);
+                        canMove = isCastling(gridPane, figureName, x1, x2, y1, y2);
                 }
                 break;
             case '6': //белый ферзь
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -175,7 +206,7 @@ public class MoveChecker { //Добавить рокировку, взятие �
                         canMove = true;
                     }
                 }
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
@@ -193,7 +224,7 @@ public class MoveChecker { //Добавить рокировку, взятие �
                     }
                 }
                 if(x1 == x2 && y2 - y1 == 2 && markedStackPane.getChildren().get(0).getId().equals("@")) {
-                    if(stackPane.getChildren().isEmpty() && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                    if(stackPane.getChildren().isEmpty() && wayIsFree(gridPane, x1, x2, y1, y2)) {
                         canMove = true;
                     }
                 }
@@ -204,12 +235,13 @@ public class MoveChecker { //Добавить рокировку, взятие �
                             canMove = true;
                         }
                     } else {
-
+                        System.out.println("maybe its enPassant");
+                        canMove = isEnPassant(gridPane, figureName, x1, x2, y1);
                     }
                 }
                 break;
             case 'r': //чёрная тура
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -233,7 +265,7 @@ public class MoveChecker { //Добавить рокировку, взятие �
                 }
                 break;
             case 'b': //чёрный слон
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -255,11 +287,11 @@ public class MoveChecker { //Добавить рокировку, взятие �
                         canMove = true;
                     }
                 } else if(markedStackPane.getChildren().get(0).getId().equals("@")) {
-                    canMove = isCastling(gridPane, stackPane, markedStackPane, figureName, x1, x2, y1, y2);
+                    canMove = isCastling(gridPane, figureName, x1, x2, y1, y2);
                 }
                 break;
             case 'q': //чёрный ферзь
-                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if(((x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
@@ -269,7 +301,7 @@ public class MoveChecker { //Добавить рокировку, взятие �
                         canMove = true;
                     }
                 }
-                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, stackPane, markedStackPane, x1, x2, y1, y2)) {
+                if((Math.abs(x1 - x2) == Math.abs(y1 - y2)) && wayIsFree(gridPane, x1, x2, y1, y2)) {
                     if(!stackPane.getChildren().isEmpty()) {
                         char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {

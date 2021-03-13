@@ -60,6 +60,15 @@ public class MoveMaker {
                     figureName);
             GameController.saveSetuper.getSave().setCharAt(GameController.gridPane.getChildren().indexOf(rookStackPane) + 64, '#');
             rookStackPane.getChildren().add(imageView);
+        } else if(GameController.pawnStackPane != null) {
+            GameController.pawnStackPane.getChildren().clear();
+
+            GameController.saveSetuper.getSave().setCharAt(GameController.gridPane.getChildren().indexOf(GameController.pawnStackPane),
+                     '0');
+            GameController.saveSetuper.getSave().setCharAt(GameController.gridPane.getChildren().indexOf(GameController.pawnStackPane) + 64,
+                    '#');
+
+            GameController.pawnStackPane = null;
         }
     }
 
