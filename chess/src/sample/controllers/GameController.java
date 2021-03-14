@@ -14,6 +14,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import sample.Main;
 import sample.filework.FileReaderWriter;
+import sample.gameLogic.MoveChecker;
 import sample.gameLogic.MoveMaker;
 import sample.gameLogic.PlayerLogic;
 import sample.gameLogic.SaveSetuper;
@@ -24,11 +25,13 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class GameController implements Initializable {
-    public final PlayerLogic playerLogic = new PlayerLogic();
+    public static final PlayerLogic playerLogic = new PlayerLogic();
     public static MoveMaker moveMaker = new MoveMaker();
+    public static MoveChecker moveChecker = new MoveChecker();
     public static SaveSetuper saveSetuper = new SaveSetuper();
     public static boolean whiteTeamsTurn;
-    public static int castlingType = 0; //0 - не рокировка, 1 - рокировка влево, 2 - рокировка вправо
+    public static boolean pawnTransformation = false;
+    public static int moveType = 0; //-1 - без хода, 0 - обычный, 1 - рокировка влево, 2 - рокировка вправо, 3 - взятие на проходе
     public static char figureName = '_';
     public static StackPane pawnStackPane;
     public static StackPane stackPane;
@@ -60,10 +63,10 @@ public class GameController implements Initializable {
         saveSetuper.loadSave(saveSetuper.getOpponent() + "History.txt");
         if(saveSetuper.getSave().length() != 130) {
             saveSetuper.getSave().delete(saveSetuper.getSave().length() - 130, saveSetuper.getSave().length());
-            FileReaderWriter.writeFile(saveSetuper.getSave().toString(), "src/saves/" + saveSetuper.getOpponent() + "History.txt", false);
+            FileReaderWriter.writeFile(saveSetuper.getSave().toString(), "saves/" + saveSetuper.getOpponent() + "History.txt", false);
 
             saveSetuper.getSave().delete(0, saveSetuper.getSave().length() - 129);
-            FileReaderWriter.writeFile(saveSetuper.getSave().toString(), "src/saves/" + saveSetuper.getOpponent() + ".txt", false);
+            FileReaderWriter.writeFile(saveSetuper.getSave().toString(), "saves/" + saveSetuper.getOpponent() + ".txt", false);
             saveSetuper.setupSave(desc_gridPane);
             markedStackPane = null;
         } else {
@@ -74,8 +77,8 @@ public class GameController implements Initializable {
     @FXML
     private void restart() {
         saveSetuper.loadSave("default.txt");
-        FileReaderWriter.writeFile(saveSetuper.getSave().toString(), "src/saves/" + saveSetuper.getOpponent() + ".txt", false);
-        FileReaderWriter.writeFile("\n" + saveSetuper.getSave(), "src/saves/" + saveSetuper.getOpponent() + "History.txt", false);
+        FileReaderWriter.writeFile(saveSetuper.getSave().toString(), "saves/" + saveSetuper.getOpponent() + ".txt", false);
+        FileReaderWriter.writeFile("\n" + saveSetuper.getSave(), "saves/" + saveSetuper.getOpponent() + "History.txt", false);
         saveSetuper.setupSave(desc_gridPane);
     }
 
@@ -103,36 +106,37 @@ public class GameController implements Initializable {
 
         gridPane.getChildren().clear();
         desc_gridPane.getChildren().clear();
-
-        System.out.println("Returned to menu");
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) { initializeCells(); }
 
     private void figureClicked(StackPane stackPane) {
-        System.out.println("Figure was clicked");
         markFigure(stackPane);
         oldStackPane = stackPane;
         GameController.stackPane = stackPane;
 
         if(markedStackPane != null) {
-            System.out.println("markedStackPane != null");
+            figureName = PlayerLogic.getFigureNameFromStackPane(GameController.markedStackPane);
             if (markedStackPane != stackPane && playerLogic.isFigure(markedStackPane)) {
-                if ((PlayerLogic.getFigureTeam(PlayerLogic.getFigureNameFromStackPane(markedStackPane)).equals("white") && whiteTeamsTurn)
+                if(saveSetuper.getCellFlags().get(gridPane.getChildren().indexOf(markedStackPane)).get(gridPane.getChildren().indexOf(stackPane)) != -1) {
+                    setCords(markedStackPane, stackPane);
+                    moveMaker.doMove(saveSetuper.getCellFlags().get(gridPane.getChildren().indexOf(markedStackPane)).get(gridPane.getChildren().indexOf(stackPane)));
+                }
+                /*if ((PlayerLogic.getFigureTeam(PlayerLogic.getFigureNameFromStackPane(markedStackPane)).equals("white") && whiteTeamsTurn)
                         || (PlayerLogic.getFigureTeam(PlayerLogic.getFigureNameFromStackPane(markedStackPane)).equals("black") && !whiteTeamsTurn)) {
                     System.out.println("figures are different and we have one marked figure");
-                    setCords();
-                    if(playerLogic.checkTeams()) {
+                    setCords(markedStackPane, GameController.stackPane);
+                    if(playerLogic.checkTeams(figureName) && moveChecker.canItMove(gridPane, GameController.stackPane, markedStackPane,
+                            figureName, x1, x2, y1, y2)) {
                         moveMaker.doMove();
                     }
-                }
+                }*/
             }
         }
     }
 
     public static void markFigure(StackPane stackPane) {
-        System.out.println("marking figure");
         if(!stackPane.getChildren().isEmpty()) {
             if((PlayerLogic.getFigureTeam(PlayerLogic.getFigureNameFromStackPane(stackPane)).equals("white") && whiteTeamsTurn)
                     || (PlayerLogic.getFigureTeam(PlayerLogic.getFigureNameFromStackPane(stackPane)).equals("black") && !whiteTeamsTurn)) {
@@ -140,7 +144,6 @@ public class GameController implements Initializable {
                 focusImage.fitHeightProperty().bind(MainMenuController.stage.heightProperty().divide(8.727272727272727));
                 focusImage.fitWidthProperty().bind(MainMenuController.stage.widthProperty().divide(10));
                 stackPane.getChildren().add(focusImage);
-                System.out.println("figure marked");
                 unmarkFigure(markedStackPane);
                 markedStackPane = stackPane;
             }
@@ -148,19 +151,16 @@ public class GameController implements Initializable {
     }
 
     public static void unmarkFigure(StackPane stackPane) {
-        System.out.println("unmarking figure");
         if(stackPane != null) {
             if (!stackPane.getChildren().isEmpty()) {
                 if (stackPane.getChildren().size() > 1) {
-                    System.out.println("figure unmarked");
                     stackPane.getChildren().remove(1);
                 }
             }
         }
     }
 
-    public void setCords() {
-        System.out.println("Setting old and new x and y cords");
+    public static void setCords(StackPane markedStackPane, StackPane stackPane) {
         if(GridPane.getRowIndex(markedStackPane) == null) y1 = 0;
         else y1 = GridPane.getRowIndex(markedStackPane);
 
@@ -183,6 +183,7 @@ public class GameController implements Initializable {
     public void createCells() {
         for(int i = 0; i < 64; i++) {
             final StackPane finalStackPane = (StackPane) desc_gridPane.getChildren().get(i);
+            saveSetuper.getStackPanes().add(finalStackPane);
             finalStackPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent mouseEvent) {

@@ -2,6 +2,7 @@ package sample.gameLogic;
 
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
+import sample.Main;
 import sample.controllers.GameController;
 import sample.filework.FileReaderWriter;
 
@@ -12,19 +13,18 @@ public class MoveMaker {
 
     }
 
-    public void doMove() {
-        System.out.println("Doing move");
+    public void doMove(Integer moveType) {
         GameController.unmarkFigure(GameController.markedStackPane);
-        moveFigures();
+        moveFigures(moveType);
         setSave();
         addToHistory();
         GameController.markedStackPane = null;
         isCastling = false;
-        GameController.castlingType = 0;
+        if(GameController.whiteTeamsTurn) Main.stage.setTitle("Шахматы Ход белых"); else Main.stage.setTitle("Шахматы Ход чёрных");
+        GameController.saveSetuper.checkAllMoves();
     }
 
-    public void moveFigures() {
-        System.out.println("Moving figures");
+    public void moveFigures(Integer moveType) {
         if(!GameController.stackPane.getChildren().isEmpty()) {
             GameController.stackPane.getChildren().remove(0);
         }
@@ -39,9 +39,9 @@ public class MoveMaker {
         StackPane rookStackPane;
         int x2 = 0;
         int rookPlace = +1;
-        if(GameController.castlingType == 1) {
+        if(moveType == 1) {
             isCastling = true;
-        } else if(GameController.castlingType == 2) {
+        } else if(moveType == 2) {
             x2 = 7;
             rookPlace = -1;
             isCastling = true;
@@ -59,7 +59,11 @@ public class MoveMaker {
                     figureName);
             GameController.saveSetuper.getSave().setCharAt(GameController.gridPane.getChildren().indexOf(rookStackPane) + 64, '#');
             rookStackPane.getChildren().add(imageView);
-        } else if(GameController.pawnStackPane != null) {
+        } else if(GameController.pawnTransformation) {
+
+
+            GameController.pawnTransformation = false;
+        } else if(moveType == 3) { //если это взятие на проходе
             GameController.pawnStackPane.getChildren().clear();
 
             GameController.saveSetuper.getSave().setCharAt(GameController.gridPane.getChildren().indexOf(GameController.pawnStackPane),
@@ -72,20 +76,18 @@ public class MoveMaker {
     }
 
     public void setSave() {
-        System.out.println("Setting save");
         int oldCellIndex = GameController.gridPane.getChildren().indexOf(GameController.markedStackPane);
         int newCellIndex = GameController.gridPane.getChildren().indexOf(GameController.stackPane);
-        GameController.saveSetuper.getSave().setCharAt(oldCellIndex, '0'); System.out.println("Setting 0 at " + (oldCellIndex));
-        GameController.saveSetuper.getSave().setCharAt(newCellIndex, GameController.figureName); System.out.println("Setting " + GameController.figureName + " at " + (newCellIndex));
-        GameController.saveSetuper.getSave().setCharAt(oldCellIndex + 64, '#'); System.out.println("Setting # at " + (oldCellIndex + 64));
-        GameController.saveSetuper.getSave().setCharAt(newCellIndex + 64, '#'); System.out.println("Setting # at " + (newCellIndex + 64));
+        GameController.saveSetuper.getSave().setCharAt(oldCellIndex, '0');
+        GameController.saveSetuper.getSave().setCharAt(newCellIndex, GameController.figureName);
+        GameController.saveSetuper.getSave().setCharAt(oldCellIndex + 64, '#');
+        GameController.saveSetuper.getSave().setCharAt(newCellIndex + 64, '#');
         char team; if(GameController.whiteTeamsTurn) team = '7'; else team = '8';
-        GameController.saveSetuper.getSave().setCharAt(128, team); System.out.println("Setting " + team + " at " + (128));
-        FileReaderWriter.writeFile(GameController.saveSetuper.getSave().toString(), "src/saves/" + GameController.saveSetuper.getOpponent() + ".txt", false);
+        GameController.saveSetuper.getSave().setCharAt(128, team);
+        FileReaderWriter.writeFile(GameController.saveSetuper.getSave().toString(), "saves/" + GameController.saveSetuper.getOpponent() + ".txt", false);
     }
 
     public void addToHistory() {
-        System.out.println("Adding to history");
-        FileReaderWriter.writeFile("\n" + GameController.saveSetuper.getSave(), "src/saves/" + GameController.saveSetuper.getOpponent() + "History.txt", true);
+        FileReaderWriter.writeFile("\n" + GameController.saveSetuper.getSave(), "saves/" + GameController.saveSetuper.getOpponent() + "History.txt", true);
     }
 }

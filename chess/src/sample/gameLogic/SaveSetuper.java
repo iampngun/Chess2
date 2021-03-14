@@ -4,6 +4,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import sample.Main;
 import sample.controllers.GameController;
 import sample.controllers.MainMenuController;
 import sample.filework.FileReaderWriter;
@@ -15,6 +16,9 @@ public class SaveSetuper {
     private StringBuilder save = new StringBuilder();
     private String opponent;
     private List<ImageView> figures = new ArrayList<>();
+    private List<StackPane> stackPanes = new ArrayList<>();
+
+    private List<List<Integer>> cellFlags = new ArrayList<>();
 
     public SaveSetuper() {
 
@@ -34,9 +38,11 @@ public class SaveSetuper {
                     break;
                 case '7':
                     GameController.whiteTeamsTurn = true;
+                    Main.stage.setTitle("Шахматы. Ход белых");
                     break;
                 case '8':
                     GameController.whiteTeamsTurn = false;
+                    Main.stage.setTitle("Шахматы. Ход чёрных");
                     break;
                 case '@':
                     break;
@@ -52,6 +58,38 @@ public class SaveSetuper {
                     break;
             }
         }
+        checkAllMoves();
+    }
+
+    public void checkAllMoves() {
+        cellFlags.clear();
+        int i = 0;
+        for(StackPane markedStackPane : stackPanes) {
+            cellFlags.add(new ArrayList<Integer>());
+            GameController.markedStackPane = markedStackPane;
+            GameController.figureName = PlayerLogic.getFigureNameFromStackPane(markedStackPane);
+            if((PlayerLogic.getFigureTeam(GameController.figureName).equals("white") && GameController.whiteTeamsTurn)
+                    || (PlayerLogic.getFigureTeam(GameController.figureName).equals("black") && !GameController.whiteTeamsTurn)) {
+                int k = 0;
+                for (StackPane stackPane : stackPanes) {
+                    cellFlags.get(i).add(-1);
+                    if(markedStackPane != stackPane) {
+                        GameController.setCords(markedStackPane, stackPane);
+                        if(GameController.playerLogic.checkTeams(GameController.figureName) &&
+                                GameController.moveChecker.canItMove(GameController.gridPane, stackPane, markedStackPane,
+                                        GameController.figureName, GameController.x1, GameController.x2, GameController.y1, GameController.y2)) {
+                            cellFlags.get(i).set(k, GameController.moveType);
+                        }
+                    }
+                    GameController.moveType = -1;
+                    k++;
+                }
+            }
+
+            GameController.figureName = '_';
+            GameController.markedStackPane = null;
+            i++;
+        }
     }
 
     public void placeFigure(int i, int figureNumber, StackPane stackPane) {
@@ -65,7 +103,7 @@ public class SaveSetuper {
 
     public void loadSave(String fileName) {
         save.delete(0, save.length());
-        save.append(FileReaderWriter.readFile("src/saves/" + fileName));
+        save.append(FileReaderWriter.readFile("saves/" + fileName));
     }
 
     public StringBuilder getSave() {
@@ -87,5 +125,19 @@ public class SaveSetuper {
     }
     public void setOpponent(String opponent) {
         this.opponent = opponent;
+    }
+
+    public List<StackPane> getStackPanes() {
+        return stackPanes;
+    }
+    public void setStackPanes(List<StackPane> stackPanes) {
+        this.stackPanes = stackPanes;
+    }
+
+    public List<List<Integer>> getCellFlags() {
+        return cellFlags;
+    }
+    public void setCellFlags(List<List<Integer>> cellFlags) {
+        this.cellFlags = cellFlags;
     }
 }

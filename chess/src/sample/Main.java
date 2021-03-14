@@ -12,11 +12,13 @@ import sample.controllers.MainMenuController;
 public class Main extends Application {
     public static Parent root;
     public static Scene scene;
+    public static Stage stage;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        stage = primaryStage;
         root = FXMLLoader.load(getClass().getResource("fxml/mainMenu.fxml"));
-        primaryStage.setTitle("Шахматы");
+        primaryStage.setTitle("Шахматы.");
         scene = new Scene(root, 640, 480);
         primaryStage.setWidth(640);
         primaryStage.setHeight(480);
