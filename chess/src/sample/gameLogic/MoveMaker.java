@@ -36,7 +36,7 @@ public class MoveMaker {
         moveFigures(moveType);
         if(continueMove) {
             setSave();
-            addToHistory();
+            if(GameController.saveSetuper.getOpponent().equals("player")) addToHistory();
             GameController.markedStackPane = null;
             isCastling = false;
             if (GameController.whiteTeamsTurn) Main.stage.setTitle("Шахматы Ход белых");
@@ -45,7 +45,8 @@ public class MoveMaker {
             SaveSetuper.whiteTeamHasMoves = false;
             GameController.saveSetuper.checkAllMoves();
             GameController.saveSetuper.checkEndgame();
-            if(GameController.saveSetuper.getOpponent().equals("pc") && !GameController.whiteTeamsTurn) pcMove();
+            if(GameController.saveSetuper.getOpponent().equals("pc") &&
+                    !GameController.whiteTeamsTurn && GameController.descAnchorPane.isDisabled()) pcMove();//может не работать
         }
     }
 
@@ -53,6 +54,7 @@ public class MoveMaker {
         PcLogic pcLogic = new PcLogic(GameController.saveSetuper.getSave());
         pcLogic.changeSave();
         GameController.saveSetuper.setSave(pcLogic.getSave());
+        addToHistory();
         GameController.saveSetuper.setupSave(GameController.gridPane);
     }
 
