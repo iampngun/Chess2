@@ -18,7 +18,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         stage = primaryStage;
         root = FXMLLoader.load(getClass().getResource("fxml/mainMenu.fxml"));
-        primaryStage.setTitle("Шахматы.");
+        primaryStage.setTitle("Шахматы. Главное меню");
         scene = new Scene(root, 640, 480);
         primaryStage.setWidth(640);
         primaryStage.setHeight(480);

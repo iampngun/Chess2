@@ -31,15 +31,10 @@ public class PlayerLogic {
 
     public boolean checkTeams(char figureName) {
         boolean shouldDo = false;
-        if (GameController.saveSetuper.getOpponent().equals("player")) {
-            if(getFigureTeam(figureName).equals("white") &&
-                    GameController.whiteTeamsTurn) {
-                shouldDo = true;
-            } else if(!getFigureTeam(figureName).equals("white") &&
-                    !GameController.whiteTeamsTurn) {
-                shouldDo = true;
-            }
-        } else if(getFigureTeam(figureName).equals("white") && GameController.whiteTeamsTurn) {
+
+        if(getFigureTeam(figureName).equals("white") && GameController.whiteTeamsTurn) {
+            shouldDo = true;
+        } else if(getFigureTeam(figureName).equals("black") && !GameController.whiteTeamsTurn) {
             shouldDo = true;
         }
 
