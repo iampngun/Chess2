@@ -1,17 +1,15 @@
 package sample.gameLogic;
 
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
 import sample.controllers.GameController;
 import sample.filework.FileReaderWriter;
 
-public class MoveChecker { //Добавить превращение пешки, победу, ничью, ничью после 50 ходов
+public class MoveChecker {
 
     public MoveChecker() {
 
     }
 
-    public boolean wayIsFree(GridPane gridPane, int x1, int x2, int y1, int y2) {
+    public boolean checkWay(StringBuilder save, int x1, int x2, int y1, int y2) {
         boolean isFree = true;
         int maxI;
 
@@ -29,7 +27,6 @@ public class MoveChecker { //Добавить превращение пешки,
 
 //        получить номер элемента на доске по его координатам: y * 8 + x
 
-        StackPane checkingStackPane;
         int x3 = x1;
         int y3 = y1;
 
@@ -37,9 +34,8 @@ public class MoveChecker { //Добавить превращение пешки,
             x3 += xStep;
             y3 += yStep;
 
-
-            checkingStackPane = (StackPane) gridPane.getChildren().get(y3 * 8 + x3);
-            if(!checkingStackPane.getChildren().isEmpty()) {
+            char checkingCell = save.charAt(y3 * 8 + x3);
+            if(!(checkingCell == '0')) {
                 isFree = false;
             }
         }
@@ -47,59 +43,64 @@ public class MoveChecker { //Добавить превращение пешки,
         return isFree;
     }
 
-    public boolean isEnPassant(GridPane gridPane, char figureName, int x1, int x2, int y1) {
+    public boolean checkEnPassant(StringBuilder save, char figureName, int x1, int x2, int y1, SaveSetuper.MoveType moveType) {
         boolean isEnPassant = false;
+        boolean left = false;
 
         int x = 1;
-        if(x1 > x2) x = -1;
+        if(x1 > x2) {
+            x = -1;
+            left = true;
+        }
 
-        StackPane checkingStackPane = (StackPane) gridPane.getChildren().get(y1 * 8 + (x1 + x));
+        char checkingCell = save.charAt(y1 * 8 + (x1 + x));
 
         char enemyFigureName;
         int y;
         if(figureName == '1') { enemyFigureName = 'p'; y = -2; } else { enemyFigureName = '1'; y = +2; }
 
-        if(!checkingStackPane.getChildren().isEmpty()) {
-            if(PlayerLogic.getFigureNameFromStackPane(checkingStackPane) == enemyFigureName) {
-                StringBuilder save = new StringBuilder();
-                save.append(FileReaderWriter.readFile("saves/" + GameController.saveSetuper.getOpponent() + "History.txt"));
-                save.delete(save.length() - 130, save.length());
-                save.delete(0, save.length() - 130);
-                if(save.charAt(((y1 + y) * 8 + (x1 + x)) + 1) == enemyFigureName) {
-                    isEnPassant = true;
-                    GameController.pawnStackPane = checkingStackPane;
-                    GameController.moveType = 3;
-                }
+        if(checkingCell == enemyFigureName) {
+            StringBuilder oldSave = new StringBuilder();
+            oldSave.append(FileReaderWriter.readFile("saves/" + GameController.saveSetuper.getOpponent() + "History.txt"));
+
+            if(GameController.saveSetuper.getOpponent().equals("player"))
+                oldSave.delete(oldSave.length() - 130, oldSave.length());
+            oldSave.delete(0, oldSave.length() - 130);
+
+            if(oldSave.charAt(((y1 + y) * 8 + (x1 + x)) + 1) == enemyFigureName) {
+                isEnPassant = true;
+                if(left) moveType.value = 3; else moveType.value = 4;
             }
         }
 
         return isEnPassant;
     }
 
-    public boolean isCastling(GridPane gridPane, char figureName, int x1, int x2, int y1, int y2) {
+    public boolean checkCastling(StringBuilder save, char figureName, int x1, int x2, int y1, int y2, SaveSetuper.MoveType moveType) {
         boolean isCastling = false;
 
         if(Math.abs(x1 - x2) == 2 && y1 == y2) {
-            StackPane checkingStackPane;
+            char checkingCell;
+            int checkingCellIndex;
             int x;
             int castlingType;
             if(x1 > x2) {
-                checkingStackPane = (StackPane) gridPane.getChildren().get(y2 * 8);
+                checkingCellIndex = y2 * 8;
                 x = 0;
                 castlingType = 1;
             } else {
-                checkingStackPane = (StackPane) gridPane.getChildren().get(y2 * 8 + 7);
+                checkingCellIndex = y2 * 8 + 7;
                 x = 7;
                 castlingType = 2;
             }
+            checkingCell = save.charAt(checkingCellIndex);
 
-            if(PlayerLogic.getFigureTeam(PlayerLogic.getFigureNameFromStackPane(checkingStackPane))
-                    .equals(PlayerLogic.getFigureTeam(figureName))
-                    && (PlayerLogic.getFigureNameFromStackPane(checkingStackPane) == '2' || PlayerLogic.getFigureNameFromStackPane(checkingStackPane) == 'r')
-                    && checkingStackPane.getChildren().get(0).getId().equals("@")) { //если на крайней клетке дружественная тура, которая не ходила
-                if(wayIsFree(gridPane, x1, x, y1, y2)) {
+            if(PlayerLogic.getFigureTeam(checkingCell).equals(PlayerLogic.getFigureTeam(figureName))
+                    && (checkingCell == '2' || checkingCell == 'r')
+                    && save.charAt(checkingCellIndex + 64) == '@') { //если на крайней клетке дружественная тура, которая не ходила
+                if(checkWay(save, x1, x, y1, y2)) {
                     isCastling = true;
-                    GameController.moveType = castlingType;
+                    moveType.value = castlingType;
                 }
             }
         }
@@ -107,7 +108,8 @@ public class MoveChecker { //Добавить превращение пешки,
         return isCastling;
     }
 
-    public boolean canItMove(GridPane gridPane, StackPane stackPane, StackPane markedStackPane, char figureName, int x1, int x2, int y1, int y2) {
+    public boolean checkMove(StringBuilder save, int figureIndex, char figureName, char enemyFigureName,
+                             int x1, int x2, int y1, int y2, SaveSetuper.MoveType moveType) {
         boolean canMove = false;
 
         final boolean straightMove = (x1 == x2 && y1 != y2) || (x1 != x2 && y1 == y2);
@@ -118,220 +120,243 @@ public class MoveChecker { //Добавить превращение пешки,
         switch(figureName) {
             case '1': //белая пешка
                 if(x1 == x2 && y1 - y2 == 1) {
-                    if(stackPane.getChildren().isEmpty()) {
+                    if(enemyFigureName == '0') {
                         canMove = true;
-                        GameController.moveType = 0;
-                        if(y2 == 0 || y2 == 7) GameController.pawnTransformation = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
+                        if(y2 == 0) moveType.value = 4; else moveType.value = 0;
                     }
                 }
-                if(x1 == x2 && y1 - y2 == 2 && markedStackPane.getChildren().get(0).getId().equals("@")) {
-                    if(stackPane.getChildren().isEmpty() && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                if(x1 == x2 && y1 - y2 == 2 && save.charAt(figureIndex + 64) == '@') {
+                    if(enemyFigureName == '0' && checkWay(save, x1, x2, y1, y2)) {
+                        canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
                 if(Math.abs(x1 - x2) == 1 && y1 - y2 == 1) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
+                            if(y2 == 0) moveType.value = 4; else moveType.value = 0;
                         }
-                    } else {
-                        canMove = isEnPassant(gridPane, figureName, x1, x2, y1);
+                    } else if(checkEnPassant(save, figureName, x1, x2, y1, moveType)) {
+                        canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
                     }
                 }
                 break;
             case '2': //белая тура
-                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
-                        if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {;
-                            GameController.moveType = 0;
+                if(straightMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
+                        if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
+                            moveType.value = 0;
                             canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
                         }
-                    } else {;
-                        GameController.moveType = 0;
+                    } else {
+                        moveType.value = 0;
                         canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
                     }
                 }
                 break;
             case '3': //белый конь
                 if(knightMove) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
-                        if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {;
-                            GameController.moveType = 0;
+                    if(!(enemyFigureName == '0')) {
+                        if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
+                            moveType.value = 0;
                             canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
                         }
-                    } else {;
-                        GameController.moveType = 0;
+                    } else {
+                        moveType.value = 0;
                         canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
                     }
                 }
                 break;
             case '4': //белый слон
-                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                if(diagonalMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
+                            moveType.value = 0;
                         }
-                    } else {;
-                        GameController.moveType = 0;
+                    } else {
+                        moveType.value = 0;
                         canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
                     }
                 }
                 break;
             case '5': //белый король
                 if(oneCellMove) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
+                            moveType.value = 0;
                         }
-                    } else {;
-                        GameController.moveType = 0;
+                    } else {
+                        moveType.value = 0;
                         canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
                     }
-                } else if(markedStackPane.getChildren().get(0).getId().equals("@")) {
-                        canMove = isCastling(gridPane, figureName, x1, x2, y1, y2);
+                } else if(save.charAt(figureIndex + 64) == '@') {
+                    if(checkCastling(save, figureName, x1, x2, y1, y2, moveType)) {
+                        canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
+                    }
                 }
                 break;
             case '6': //белый ферзь
-                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                if(straightMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
-                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                if(diagonalMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.whiteTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
                 break;
             case 'p': //чёрная пешка
                 if(x1 == x2 && y2 - y1 == 1) {
-                    if(stackPane.getChildren().isEmpty()) {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                    if(enemyFigureName == '0') {
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        if(y2 == 7) moveType.value = 4; else moveType.value = 0;
                     }
                 }
-                if(x1 == x2 && y2 - y1 == 2 && markedStackPane.getChildren().get(0).getId().equals("@")) {
-                    if(stackPane.getChildren().isEmpty() && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                if(x1 == x2 && y2 - y1 == 2 && save.charAt(figureIndex + 64) == '@') {
+                    if(enemyFigureName == '0' && checkWay(save, x1, x2, y1, y2)) {
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
                 if(Math.abs(x1 - x2) == 1 && y2 - y1 == 1) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                            if(y2 == 7) moveType.value = 4; else moveType.value = 0;
                         }
-                    } else {
-                        canMove = isEnPassant(gridPane, figureName, x1, x2, y1);
+                    } else if(checkEnPassant(save, figureName, x1, x2, y1, moveType)) {
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
                     }
                 }
                 break;
             case 'r': //чёрная тура
-                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                if(straightMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
                 break;
             case 'n': //чёрный конь
                 if(knightMove) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
                 break;
             case 'b': //чёрный слон
-                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                if(diagonalMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
                 break;
             case 'k': //чёрный король
                 if(oneCellMove) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        moveType.value = 0;
                     }
-                } else if(markedStackPane.getChildren().get(0).getId().equals("@")) {
-                    canMove = isCastling(gridPane, figureName, x1, x2, y1, y2);
+                } else if(save.charAt(figureIndex + 64) == '@') {
+                    if(checkCastling(save, figureName, x1, x2, y1, y2, moveType)) {
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                    }
                 }
                 break;
             case 'q': //чёрный ферзь
-                if(straightMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                if(straightMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
-                if(diagonalMove && wayIsFree(gridPane, x1, x2, y1, y2)) {
-                    if(!stackPane.getChildren().isEmpty()) {
-                        char enemyFigureName = PlayerLogic.getFigureNameFromStackPane(stackPane);
+                if(diagonalMove && checkWay(save, x1, x2, y1, y2)) {
+                    if(!(enemyFigureName == '0')) {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
-                            canMove = true;;
-                            GameController.moveType = 0;
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                            moveType.value = 0;
                         }
                     } else {
-                        canMove = true;;
-                        GameController.moveType = 0;
+                        canMove = true;
+                        SaveSetuper.blackTeamHasMoves = true;
+                        moveType.value = 0;
                     }
                 }
                 break;

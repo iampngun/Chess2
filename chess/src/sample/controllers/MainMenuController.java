@@ -46,8 +46,6 @@ public class MainMenuController implements Initializable {
 
     @FXML
     public static void quit() {
-
-
         stage.close();
     }
 

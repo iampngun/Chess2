@@ -2,7 +2,6 @@ package sample.gameLogic;
 
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import sample.controllers.GameController;
 
 public class PlayerLogic {
 
@@ -29,17 +28,12 @@ public class PlayerLogic {
         return figureName;
     }
 
-    public boolean checkTeams(char figureName) {
+    public boolean checkTeams(char figureName, boolean whiteTeamsTurn) {
         boolean shouldDo = false;
-        if (GameController.saveSetuper.getOpponent().equals("player")) {
-            if(getFigureTeam(figureName).equals("white") &&
-                    GameController.whiteTeamsTurn) {
-                shouldDo = true;
-            } else if(!getFigureTeam(figureName).equals("white") &&
-                    !GameController.whiteTeamsTurn) {
-                shouldDo = true;
-            }
-        } else if(getFigureTeam(figureName).equals("white") && GameController.whiteTeamsTurn) {
+
+        if(getFigureTeam(figureName).equals("white") && whiteTeamsTurn) {
+            shouldDo = true;
+        } else if(getFigureTeam(figureName).equals("black") && !whiteTeamsTurn) {
             shouldDo = true;
         }
 
