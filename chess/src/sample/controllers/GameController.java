@@ -136,7 +136,6 @@ public class GameController implements Initializable {
         if(markedStackPane != null) {
             figureName = PlayerLogic.getFigureNameFromStackPane(GameController.markedStackPane);
             if (markedStackPane != stackPane && playerLogic.isFigure(markedStackPane)) {
-
                 Integer cellFlag = saveSetuper.getCellFlags().get(gridPane.getChildren().indexOf(markedStackPane)).
                             get(gridPane.getChildren().indexOf(stackPane));
                 if(cellFlag != -1) {

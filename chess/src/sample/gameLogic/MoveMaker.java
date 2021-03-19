@@ -43,19 +43,26 @@ public class MoveMaker {
             else Main.stage.setTitle("Шахматы Ход чёрных");
             SaveSetuper.blackTeamHasMoves = false;
             SaveSetuper.whiteTeamHasMoves = false;
-            GameController.saveSetuper.checkMoves(GameController.saveSetuper.getSave());
+            //cellFlags скорее всего неправильный
+            GameController.saveSetuper.checkMoves(GameController.saveSetuper.getSave(), GameController.saveSetuper.getCellFlags());
             GameController.saveSetuper.checkEndgame();
             if(GameController.saveSetuper.getOpponent().equals("pc") &&
-                    !GameController.whiteTeamsTurn && GameController.descAnchorPane.isDisabled()) pcMove();//может не работать
+                    !GameController.whiteTeamsTurn) {
+                GameController.mainAnchorPane.setDisable(true);
+                pcMove();
+            }
         }
     }
 
     public void pcMove() {
-        PcLogic pcLogic = new PcLogic(GameController.saveSetuper.getSave());
-        pcLogic.changeSave();
-        GameController.saveSetuper.setSave(pcLogic.getSave());
+        PcLogic pcLogic = new PcLogic();
+        GameController.saveSetuper.setSave(pcLogic.changeSave(GameController.saveSetuper.getSave(),
+                GameController.saveSetuper.getCellFlags(), 2));
+        FileReaderWriter.writeFile(GameController.saveSetuper.getSave().toString(),
+                "saves/" + GameController.saveSetuper.getOpponent() + ".txt", false);
         addToHistory();
         GameController.saveSetuper.setupSave(GameController.gridPane);
+        GameController.mainAnchorPane.setDisable(false);
     }
 
     public void moveFigures(Integer moveType) {

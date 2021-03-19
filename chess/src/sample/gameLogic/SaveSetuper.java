@@ -94,7 +94,7 @@ public class SaveSetuper {
                     break;
             }
         }
-        checkMoves(save);
+        checkMoves(save, cellFlags);
         checkEndgame();
     }
 
@@ -102,7 +102,7 @@ public class SaveSetuper {
         int value = -1; //-1 - без хода, 0 - обычный, 1 - рокировка влево, 2 - рокировка вправо,
         // 3 - взятие на проходе влево, 4 - вправо, 5 - трансформация пешки
     }
-    public void checkMoves(StringBuilder save) {
+    public void checkMoves(StringBuilder save, List<List<Integer>> cellFlags) {
         cellFlags.clear();
         int x1, y1, x2, y2;
         for(int figureIndex = 0; figureIndex < 64; figureIndex++) {
