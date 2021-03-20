@@ -99,14 +99,14 @@ public class GameController implements Initializable {
     }
 
     @FXML
-    private void flipDesc() {
-        if(desc_anchorPane.getRotate() == 180) {
-            desc_anchorPane.setRotate(0);
+    public static void flipDesc() {
+        if(descAnchorPane.getRotate() == 180) {
+            descAnchorPane.setRotate(0);
             for(ImageView imageView : saveSetuper.getFigures()) {
                 imageView.setRotate(0);
             }
         } else {
-            desc_anchorPane.setRotate(180);
+            descAnchorPane.setRotate(180);
             for(ImageView imageView : saveSetuper.getFigures()) {
                 imageView.setRotate(180);
             }
@@ -136,7 +136,6 @@ public class GameController implements Initializable {
         if(markedStackPane != null) {
             figureName = PlayerLogic.getFigureNameFromStackPane(GameController.markedStackPane);
             if (markedStackPane != stackPane && playerLogic.isFigure(markedStackPane)) {
-
                 Integer cellFlag = saveSetuper.getCellFlags().get(gridPane.getChildren().indexOf(markedStackPane)).
                             get(gridPane.getChildren().indexOf(stackPane));
                 if(cellFlag != -1) {

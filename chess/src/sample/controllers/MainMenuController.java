@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import sample.Main;
 
@@ -29,6 +30,14 @@ public class MainMenuController implements Initializable {
 
     public MainMenuController() {
 
+    }
+
+    @FXML
+    public void about() throws IOException {
+        Main.root = FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("sample/fxml/about.fxml")));
+        Main.scene = new Scene(Main.root, Main.scene.getWidth(), Main.scene.getHeight());
+        Main.scene.getStylesheets().addAll("sample/css/styles.css");
+        stage.setScene(Main.scene);
     }
 
     @FXML

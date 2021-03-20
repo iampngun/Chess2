@@ -63,8 +63,7 @@ public class MoveChecker {
             StringBuilder oldSave = new StringBuilder();
             oldSave.append(FileReaderWriter.readFile("saves/" + GameController.saveSetuper.getOpponent() + "History.txt"));
 
-            if(GameController.saveSetuper.getOpponent().equals("player"))
-                oldSave.delete(oldSave.length() - 130, oldSave.length());
+            oldSave.delete(oldSave.length() - 130, oldSave.length());
             oldSave.delete(0, oldSave.length() - 130);
 
             if(oldSave.charAt(((y1 + y) * 8 + (x1 + x)) + 1) == enemyFigureName) {
@@ -123,7 +122,7 @@ public class MoveChecker {
                     if(enemyFigureName == '0') {
                         canMove = true;
                         SaveSetuper.whiteTeamHasMoves = true;
-                        if(y2 == 0) moveType.value = 4; else moveType.value = 0;
+                        if(y2 == 0) moveType.value = 5; else moveType.value = 0;
                     }
                 }
                 if(x1 == x2 && y1 - y2 == 2 && save.charAt(figureIndex + 64) == '@') {
@@ -138,11 +137,13 @@ public class MoveChecker {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("black")) {
                             canMove = true;
                             SaveSetuper.whiteTeamHasMoves = true;
-                            if(y2 == 0) moveType.value = 4; else moveType.value = 0;
+                            if(y2 == 0) moveType.value = 5; else moveType.value = 0;
                         }
-                    } else if(checkEnPassant(save, figureName, x1, x2, y1, moveType)) {
-                        canMove = true;
-                        SaveSetuper.whiteTeamHasMoves = true;
+                    } else if(y1 == 3) {
+                        if(checkEnPassant(save, figureName, x1, x2, y1, moveType)) {
+                            canMove = true;
+                            SaveSetuper.whiteTeamHasMoves = true;
+                        }
                     }
                 }
                 break;
@@ -244,7 +245,7 @@ public class MoveChecker {
                     if(enemyFigureName == '0') {
                         canMove = true;
                         SaveSetuper.blackTeamHasMoves = true;
-                        if(y2 == 7) moveType.value = 4; else moveType.value = 0;
+                        if(y2 == 7) moveType.value = 5; else moveType.value = 0;
                     }
                 }
                 if(x1 == x2 && y2 - y1 == 2 && save.charAt(figureIndex + 64) == '@') {
@@ -259,11 +260,13 @@ public class MoveChecker {
                         if(PlayerLogic.getFigureTeam(enemyFigureName).equals("white")) {
                             canMove = true;
                             SaveSetuper.blackTeamHasMoves = true;
-                            if(y2 == 7) moveType.value = 4; else moveType.value = 0;
+                            if(y2 == 7) moveType.value = 5; else moveType.value = 0;
                         }
-                    } else if(checkEnPassant(save, figureName, x1, x2, y1, moveType)) {
-                        canMove = true;
-                        SaveSetuper.blackTeamHasMoves = true;
+                    } else if(y1 == 4) {
+                        if(checkEnPassant(save, figureName, x1, x2, y1, moveType)) {
+                            canMove = true;
+                            SaveSetuper.blackTeamHasMoves = true;
+                        }
                     }
                 }
                 break;
