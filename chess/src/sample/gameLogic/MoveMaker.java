@@ -57,7 +57,7 @@ public class MoveMaker {
     public void pcMove() {
         PcLogic pcLogic = new PcLogic();
         GameController.saveSetuper.setSave(pcLogic.changeSave(GameController.saveSetuper.getSave(),
-                GameController.saveSetuper.getCellFlags(), 2));
+                GameController.saveSetuper.getCellFlags(), 3));
         FileReaderWriter.writeFile(GameController.saveSetuper.getSave().toString(),
                 "saves/" + GameController.saveSetuper.getOpponent() + ".txt", false);
         addToHistory();

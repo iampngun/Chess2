@@ -70,8 +70,8 @@ public class PcLogic {
                         move = simulateMove(move.toString(), markedCellIndex, cellIndex, cellFlags.get(markedCellIndex).get(cellIndex));
                         //--
                         moveStrength = getMoveStrength(move.toString());
-                        if(moveStrength <= worstMoveStrength)
-                            moveStrength = findWorstMove(move.toString(), depth - 1, cellFlags);
+                        //if(moveStrength <= worstMoveStrength)
+                           //moveStrength = findWorstMove(move.toString(), depth - 1, cellFlags);
 
                         if(moveStrength < worstMoveStrength) {
                             worstMoveStrength = moveStrength;
